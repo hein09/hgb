@@ -59,6 +59,19 @@ uint8_t CPU[12];
         (tWord&0xFF00?Cflag:0);\
     A=tWord&0xFF;
 
+#define INC8(R)\
+    tWord=R+1;\
+    F=(tWord&0xFF?0:Zflag)|\
+        (((R^tWord)&0x10)?Hflag:0);\
+    R=tWord&0xFF;
+
+#define DEC8(R)\
+    tWord=R-1;\
+    F=(tWord&0xFF?0:Zflag)|\
+        Nflag|\
+        (((R^tWord)&0x10)?Hflag:0);\
+    R=tWord&0xFF;
+
 #define AND(R)\
     A&=R;\
     F=(A?0:Zflag)|\
@@ -94,8 +107,8 @@ AND_B,   AND_C,   AND_D,   AND_E,   AND_H,   AND_L,   AND_dHL,   AND_A,   XOR_B,
 OR_B,    OR_C,    OR_D,    OR_E,    OR_H,    OR_L,    OR_dHL,    OR_A,    CP_B,    CP_C,    CP_D,    CP_E,    CP_H,    CP_L,    CP_dHL,    CP_A,
 RET_NZ,   POP_BC, JP_NZ_w, JP_w,  CALL_NZ_w, PUSH_BC, ADD_A_b, RST_00H, RET_Z,      RET,      JP_Z_w,  CB,    CALL_Z_w, CALL_w, ADC_A_b, RST_08H,
 RET_NC,   POP_DE, JP_NC_w, fail1, CALL_NC_w, PUSH_DE, SUB_b,   RST_10H, RET_C,      RETI,     JP_C_w,  fail2, CALL_C_w, fail3,  SBC_A_b, RST_18H,
-LDH_db_A, POP_HL, LD_dC_A, fail4, fail5,     PUSH_HL, AND_b,   RST_20H, ADD_SP_b,   JP_dHL,   LD_dw_A, fail6, fail7,    fail8,  XOR_b,   RST_28H,
-LDH_A_db, POP_AF, LD_A_dC, DI,    fail9,     PUSH_AF, OR_b,    RST_30H, LD_HL_SP_b, LD_SP_HL, LD_A_dw, EI,    failA,    failB,  CP_b,    RST_38H
+LD_db_A, POP_HL, LD_dC_A, fail4, fail5,     PUSH_HL, AND_b,   RST_20H, ADD_SP_b,   JP_dHL,   LD_dw_A, fail6, fail7,    fail8,  XOR_b,   RST_28H,
+LD_A_db, POP_AF, LD_A_dC, DI,    fail9,     PUSH_AF, OR_b,    RST_30H, LD_HL_SP_b, LD_SP_HL, LD_A_dw, EI,    failA,    failB,  CP_b,    RST_38H
 };
 
 enum opcodesCB{
