@@ -36,7 +36,7 @@ uint8_t CPU[12];
         (tWord&0xFF00?Cflag:0);\
     A=tWord&0xFF;
 
-#define ADC8(R)\
+#define ADC(R)\
     tWord=A+R+F&Cflag;\
     F=(tWord&0xFF?0:Zflag)|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
