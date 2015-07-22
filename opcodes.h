@@ -224,8 +224,75 @@ case JR_Z_b:  break;
 case JR_C_b:  break;
 case JR_NZ_b: break;
 case JR_NC_b: break;
+
 case JP_w:    PC=rom[PC]|rom[PC+1]<<8; break;
 case JP_Z_w:  if(F&Zflag){PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;};break;
 case JP_C_w:  if(F&Cflag){PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;};break;
 case JP_NZ_w: if(F&Zflag){PC+=2;}else{PC=rom[PC]|rom[PC+1]<<8;};break;
 case JP_NC_w: if(F&Cflag){PC+=2;}else{PC=rom[PC]|rom[PC+1]<<8;};break;
+case JP_dHL:  PC=HL; break;
+
+case CALL_w:    break;
+case CALL_Z_w:  break;
+case CALL_C_w:  break; 
+case CALL_NZ_w: break; 
+case CALL_NC_w: break; 
+
+case RET:    break;
+case RETI:   break;
+case RET_Z:  break;
+case RET_C:  break;
+case RET_NZ: break;
+case RET_NC: break;
+
+case RST_00H: break;
+case RST_08H: break;
+case RST_10H: break;
+case RST_18H: break;
+case RST_20H: break;
+case RST_28H: break;
+case RST_30H: break;
+case RST_38H: break;
+
+//16bit load/memory access
+case LD_BC_w: BC=rom[PC]|rom[PC+1]<<8; PC+=2; break;
+case LD_DE_w: DE=rom[PC]|rom[PC+1]<<8; PC+=2; break;
+case LD_HL_w: HL=rom[PC]|rom[PC+1]<<8; PC+=2; break;
+case LD_SP_w: SP=rom[PC]|rom[PC+1]<<8; PC+=2; break;
+
+case LD_dw_SP:
+case LD_HL_SP_b:
+case LD_SP_HL: SP=HL; break;
+
+case PUSH_BC:
+case PUSH_DE:
+case PUSH_HL:
+case PUSH_AF:
+
+case POP_BC:
+case POP_DE:
+case POP_HL:
+case POP_AF:
+
+//16bit arithmetic:
+case INC_BC: BC++; break;
+case INC_DE: DE++; break;
+case INC_HL: HL++; break;
+case INC_SP: SP++; break;
+
+case DEC_BC: BC--; break;
+case DEC_DE: DE--; break;
+case DEC_HL: HL--; break;
+case DEC_SP: SP--; break;
+
+case ADD_HL_BC:
+case ADD_HL_DE:
+case ADD_HL_HL:
+case ADD_HL_SP:
+case ADD_SP_b:
+
+//rotate
+case RLCA: tWord = A<<1; A=tWord&0xFF;   tWord&0x100?F=Cflag:F=0; F&Cflag?A|=1:0; break;
+case RLA:  tWord = A<<1; A=tWord&0xFF;   F&Cflag?A|=1:0; tWord&0x100?F=Cflag:F=0; break;
+case RRCA: tWord = A<<7; A=tWord&0xFF00; tWord&0x80?F=Cflag:F=0; F&Cflag?A|=0x80:0; break;
+case RRA:  tWord = A<<7; A=tWord&0xFF00; F&Cflag?A|=0x80:0; tWord&0x80?F=Cflag:F=0; break;
