@@ -1,8 +1,12 @@
+//TODO: INTERRUPTS
+//TODO: replace memory access
+//TODO: timing, especially conditional jumps
+//system ops
 case NOP: break;
 case STOP: printf("STOP"); running=0; break; //DIE
 case HALT: printf("HALT"); running=0; break; //WAIT FOR INTERRUPT
-case DI: break; //DISABLE INTERRUPT
-case EI: break; //ENABLE INTERRUPT
+case DI: break; //TODO: DISABLE INTERRUPT
+case EI: break; //TODO: ENABLE INTERRUPT
 
 //8-bit load
 case LD_B_A:    B=A;break;
@@ -99,8 +103,8 @@ case LD_A_db:   tByte=rom[PC++];A=rom[0xFF00+tByte];break;
 case LD_dC_A:   rom[0xFF00+C]=A;break;
 case LD_A_dC:   A=rom[0xFF00+C];break;
 
-case LD_dw_A:   tWord=(rom[PC]<<8)&rom[PC+1];PC+=2;rom[tWord]=A;break;
-case LD_A_dw:   tWord=(rom[PC]<<8)&rom[PC+1];PC+=2;A=rom[tWord];break;
+case LD_dw_A:   tWord=rom[PC]|rom[PC+1]<<8;PC+=2;rom[tWord]=A;break;
+case LD_A_dw:   tWord=rom[PC]|rom[PC+1]<<8;PC+=2;A=rom[tWord];break;
 
 //8bit arithmetic
 case DAA:
@@ -219,40 +223,40 @@ case CP_dHL: tByte=rom[HL]; CP(tByte); break;
 case CP_b: tByte=rom[PC++]; CP(tByte); break;
 
 //Jumps
-case JR_b:    break;
-case JR_Z_b:  break;
-case JR_C_b:  break;
-case JR_NZ_b: break;
-case JR_NC_b: break;
+case JR_b:    PC+=(int8_t)rom[PC]-1; break;
+case JR_Z_b:  (F&Zflag)?(PC+=(int8_t)rom[PC]-1):PC++;break;
+case JR_C_b:  (F&Cflag)?(PC+=(int8_t)rom[PC]-1):PC++;break;
+case JR_NZ_b: (F&Zflag)?PC++:(PC+=(int8_t)rom[PC]-1);break;
+case JR_NC_b: (F&Cflag)?PC++:(PC+=(int8_t)rom[PC]-1);break;
 
 case JP_w:    PC=rom[PC]|rom[PC+1]<<8; break;
-case JP_Z_w:  if(F&Zflag){PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;};break;
-case JP_C_w:  if(F&Cflag){PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;};break;
-case JP_NZ_w: if(F&Zflag){PC+=2;}else{PC=rom[PC]|rom[PC+1]<<8;};break;
-case JP_NC_w: if(F&Cflag){PC+=2;}else{PC=rom[PC]|rom[PC+1]<<8;};break;
+case JP_Z_w:  (F&Zflag)?(PC=rom[PC]|rom[PC+1]<<8):(PC+=2); break;
+case JP_C_w:  (F&Cflag)?(PC=rom[PC]|rom[PC+1]<<8):(PC+=2); break;
+case JP_NZ_w: (F&Zflag)?(PC+=2):(PC=rom[PC]|rom[PC+1]<<8); break;
+case JP_NC_w: (F&Cflag)?(PC+=2):(PC=rom[PC]|rom[PC+1]<<8); break;
 case JP_dHL:  PC=HL; break;
 
-case CALL_w:    break;
-case CALL_Z_w:  break;
-case CALL_C_w:  break; 
-case CALL_NZ_w: break; 
-case CALL_NC_w: break; 
+case CALL_w:    rom[--SP]=PC+2; PC=rom[PC]|rom[PC+1]<<8; break;
+case CALL_Z_w:  if(F&Zflag){rom[--SP]=PC+2; PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;}; break;
+case CALL_C_w:  if(F&Cflag){rom[--SP]=PC+2; PC=rom[PC]|rom[PC+1]<<8;}else{PC+=2;}; break;
+case CALL_NZ_w: if(F&Zflag){PC+=2;}else{rom[--SP]=PC+2; PC=rom[PC]|rom[PC+1]<<8;}; break;
+case CALL_NC_w: if(F&Cflag){PC+=2;}else{rom[--SP]=PC+2; PC=rom[PC]|rom[PC+1]<<8;}; break;
 
-case RET:    break;
-case RETI:   break;
-case RET_Z:  break;
-case RET_C:  break;
-case RET_NZ: break;
-case RET_NC: break;
+case RET:    PC=rom[SP++]; break;
+case RETI:   PC=rom[SP++]; break; //TODO: ENABLE INTERRUPTS
+case RET_Z:  F&Zflag?(PC=rom[SP++]):0; break;
+case RET_C:  F&Cflag?(PC=rom[SP++]):0; break;
+case RET_NZ: F&Zflag?0:(PC=rom[SP++]); break;
+case RET_NC: F&Cflag?0:(PC=rom[SP++]); break;
 
-case RST_00H: break;
-case RST_08H: break;
-case RST_10H: break;
-case RST_18H: break;
-case RST_20H: break;
-case RST_28H: break;
-case RST_30H: break;
-case RST_38H: break;
+case RST_00H: rom[--SP]=PC; PC=0x00; break;
+case RST_08H: rom[--SP]=PC; PC=0x08; break;
+case RST_10H: rom[--SP]=PC; PC=0x10; break;
+case RST_18H: rom[--SP]=PC; PC=0x18; break;
+case RST_20H: rom[--SP]=PC; PC=0x20; break;
+case RST_28H: rom[--SP]=PC; PC=0x28; break;
+case RST_30H: rom[--SP]=PC; PC=0x30; break;
+case RST_38H: rom[--SP]=PC; PC=0x38; break;
 
 //16bit load/memory access
 case LD_BC_w: BC=rom[PC]|rom[PC+1]<<8; PC+=2; break;
@@ -260,19 +264,19 @@ case LD_DE_w: DE=rom[PC]|rom[PC+1]<<8; PC+=2; break;
 case LD_HL_w: HL=rom[PC]|rom[PC+1]<<8; PC+=2; break;
 case LD_SP_w: SP=rom[PC]|rom[PC+1]<<8; PC+=2; break;
 
-case LD_dw_SP:
-case LD_HL_SP_b:
-case LD_SP_HL: SP=HL; break;
+case LD_dw_SP:   tWord=rom[PC]|rom[PC+1]<<8; PC+=2; rom[tWord++]=SP&0xFF; rom[tWord]=(SP&0xFF00)>>8; break;
+case LD_HL_SP_b: HL=SP+(int8_t)rom[PC++]; break;
+case LD_SP_HL:   SP=HL; break;
 
-case PUSH_BC:
-case PUSH_DE:
-case PUSH_HL:
-case PUSH_AF:
+case PUSH_BC: rom[--SP]=B; rom[--SP]=C; break;
+case PUSH_DE: rom[--SP]=D; rom[--SP]=E; break;
+case PUSH_HL: rom[--SP]=H; rom[--SP]=L; break;
+case PUSH_AF: rom[--SP]=A; rom[--SP]=F; break;
 
-case POP_BC:
-case POP_DE:
-case POP_HL:
-case POP_AF:
+case POP_BC: C=rom[SP++]; B=rom[SP++]; break;
+case POP_DE: E=rom[SP++]; D=rom[SP++]; break;
+case POP_HL: L=rom[SP++]; H=rom[SP++]; break;
+case POP_AF: F=rom[SP++]; A=rom[SP++]; break;
 
 //16bit arithmetic:
 case INC_BC: BC++; break;
@@ -285,14 +289,14 @@ case DEC_DE: DE--; break;
 case DEC_HL: HL--; break;
 case DEC_SP: SP--; break;
 
-case ADD_HL_BC:
-case ADD_HL_DE:
-case ADD_HL_HL:
-case ADD_HL_SP:
-case ADD_SP_b:
+case ADD_HL_BC: ADD16(BC); break;
+case ADD_HL_DE: ADD16(DE); break;
+case ADD_HL_HL: ADD16(HL); break;
+case ADD_HL_SP: ADD16(SP); break;
+case ADD_SP_b: F=0; tByte=rom[PC++]; ADD16((int8_t)tByte); break;
 
 //rotate
-case RLCA: tWord = A<<1; A=tWord&0xFF;   tWord&0x100?F=Cflag:F=0; F&Cflag?A|=1:0; break;
-case RLA:  tWord = A<<1; A=tWord&0xFF;   F&Cflag?A|=1:0; tWord&0x100?F=Cflag:F=0; break;
-case RRCA: tWord = A<<7; A=tWord&0xFF00; tWord&0x80?F=Cflag:F=0; F&Cflag?A|=0x80:0; break;
-case RRA:  tWord = A<<7; A=tWord&0xFF00; F&Cflag?A|=0x80:0; tWord&0x80?F=Cflag:F=0; break;
+case RLCA: tWord = A<<1; A=tWord&0xFF;   tWord&0x100?(F=Cflag):(F=0); F&Cflag?(A|=1):0; break;
+case RLA:  tWord = A<<1; A=tWord&0xFF;   F&Cflag?(A|=1):0; tWord&0x100?(F=Cflag):(F=0); break;
+case RRCA: tWord = A<<7; A=(tWord&0xFF00)>>8; tWord&0x80?(F=Cflag):(F=0); F&Cflag?(A|=0x80):0; break;
+case RRA:  tWord = A<<7; A=(tWord&0xFF00)>>8; F&Cflag?(A|=0x80):0; tWord&0x80?(F=Cflag):(F=0); break;
