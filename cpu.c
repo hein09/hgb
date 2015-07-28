@@ -35,21 +35,21 @@ uint8_t CPU[12];
     F=(tWord&0xFF?0:Zflag)|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
         (tWord&0xFF00?Cflag:0);\
-    A=tWord&0xFF;
+    A=tWord&0xFF
 
 #define ADC(R)\
     tWord=A+R+F&Cflag;\
     F=(tWord&0xFF?0:Zflag)|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
         (tWord&0xFF00?Cflag:0);\
-    A=tWord&0xFF;
+    A=tWord&0xFF
 
 #define ADD16(R)\
     tLong=HL+R;\
     F=F&Zflag|\
         (((HL^R^tLong)&0x1000)?Hflag:0)|\
         (tLong&0x10000?Cflag:0);\
-    HL=tLong&0xFFFF;
+    HL=tLong&0xFFFF
 
 #define SUB(R)\
     tWord=A-R;\
@@ -57,7 +57,7 @@ uint8_t CPU[12];
         Nflag|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
         (tWord&0xFF00?Cflag:0);\
-    A=tWord&0xFF;
+    A=tWord&0xFF
 
 #define SBC(R)\
     tWord=A-R-F&Cflag;\
@@ -65,40 +65,100 @@ uint8_t CPU[12];
         Nflag|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
         (tWord&0xFF00?Cflag:0);\
-    A=tWord&0xFF;
+    A=tWord&0xFF
 
 #define INC8(R)\
     tWord=R+1;\
     F=(tWord&0xFF?0:Zflag)|\
         (((R^tWord)&0x10)?Hflag:0);\
-    R=tWord&0xFF;
+    R=tWord&0xFF
 
 #define DEC8(R)\
     tWord=R-1;\
     F=(tWord&0xFF?0:Zflag)|\
         Nflag|\
         (((R^tWord)&0x10)?Hflag:0);\
-    R=tWord&0xFF;
+    R=tWord&0xFF
 
 #define AND(R)\
     A&=R;\
     F=(A?0:Zflag)|\
-        Hflag;
+        Hflag
 
 #define XOR(R)\
     A^=R;\
-    F=(A?0:Zflag);
+    F=(A?0:Zflag)
 
 #define OR(R)\
     A|=R;\
-    F=(A?0:Zflag);
+    F=(A?0:Zflag)
 
 #define CP(R)\
     tWord=A-R;\
     F=(tWord&0xFF?0:Zflag)|\
         Nflag|\
         (((A^R^tWord)&0x10)?Hflag:0)|\
-        (tWord&0xFF00?Cflag:0);
+        (tWord&0xFF00?Cflag:0)
+
+#define RLC(R)\
+    tWord=R<<1;\
+    R=tWord&0xFF;\
+    F=(R?0:Zflag)|\
+        (tWord&0x100?Cflag:0);\
+    F&Cflag?(R|=1):0
+
+#define RL(R)\
+    tWord=R<<1;\
+    R=tWord&0xFF;\
+    F&Cflag?(R|=1):0;\
+    F=(R?0:Zflag)|\
+        (tWord&0x100?Cflag:0)
+
+#define RRC(R)\
+    tWord=R<<7;\
+    R=(tWord&0xFF00)>>8;\
+    F=(R?0:Zflag)|\
+        (tWord&80?Cflag:0);\
+    F&Cflag?(R|=0x80):0
+
+#define RR(R)\
+    tWord=R<<7;\
+    R=(tWord&0xFF00)>>8;\
+    F&Cflag?(R|=0x80):0;\
+    F=(R?0:Zflag)|\
+        (tWord&80?Cflag:0)
+
+#define SLA(R)\
+    tWord=R<<1;\
+    R=tWord&0xFF;\
+    F=(R?0:Zflag)|\
+        (tWord&0x100?Cflag:0)
+
+#define SRA(R)\
+    tWord=R<<7;\
+    R=(tWord&0xFF00)>>8;\
+    F=(R?0:Zflag)|\
+        (tWord&0x80?Cflag:0)
+
+#define SLR(R)\
+    tWord=R<<7;\
+    R=((tWord&0xFF00)>>8)|(R&0x80);\
+    F=(R?0:Zflag)|\
+        (tWord&0x80?Cflag:0)
+
+#define SWAP(R)\
+    R=((R&0x0F)<<4)|((R&0xF0)>>4)
+
+#define BIT(N,R)\
+    F=(F&Cflag)|\
+        Hflag|\
+        (R&(1<<N)?0:Zflag)
+
+#define SET(N,R)\
+    R|=1<<N
+
+#define RES(N,R)\
+    R&=~(1<<N)
 
 const char* names[]={
 "NOP",     "LD_BC_w",  "LD_dBC_A",  "INC_BC",   "INC_B",     "DEC_B",    "LD_B_b",    "RLCA",     "LD_dw_SP",   "ADD_HL_BC", "LD_A_dBC",  "DEC_BC",  "INC_C",    "DEC_C",   "LD_C_b",    "RRCA",

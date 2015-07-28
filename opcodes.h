@@ -130,7 +130,7 @@ case INC_D:   INC8(D); break;
 case INC_E:   INC8(E); break;
 case INC_H:   INC8(H); break;
 case INC_L:   INC8(L); break;
-case INC_dHL: tByte=rom[HL]; INC8(tByte); break;
+case INC_dHL: tByte=rom[HL]; INC8(tByte); rom[HL]=tByte; break;
 
 case DEC_A:   DEC8(A); break;
 case DEC_B:   DEC8(B); break;
@@ -139,7 +139,7 @@ case DEC_D:   DEC8(D); break;
 case DEC_E:   DEC8(E); break;
 case DEC_H:   DEC8(H); break;
 case DEC_L:   DEC8(L); break;
-case DEC_dHL: tByte=rom[HL]; DEC8(tByte); break;
+case DEC_dHL: tByte=rom[HL]; DEC8(tByte); rom[HL]=tByte; break;
 
 case ADD_A_A: ADD8(A); break;
 case ADD_A_B: ADD8(B); break;
@@ -293,7 +293,9 @@ case ADD_HL_BC: ADD16(BC); break;
 case ADD_HL_DE: ADD16(DE); break;
 case ADD_HL_HL: ADD16(HL); break;
 case ADD_HL_SP: ADD16(SP); break;
-case ADD_SP_b: F=0; tByte=rom[PC++]; ADD16((int8_t)tByte); break;
+case ADD_SP_b: F=0; int8_t sByte=rom[PC++]; tLong=SP+sByte;
+               F=(((SP^sByte^tLong)&0x1000)?Hflag:0)|(tLong&0x10000?Cflag:0);
+               SP=tLong&0xFFFF; break;
 
 //rotate
 case RLCA: tWord = A<<1; A=tWord&0xFF;   tWord&0x100?(F=Cflag):(F=0); F&Cflag?(A|=1):0; break;
