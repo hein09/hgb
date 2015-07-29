@@ -222,11 +222,11 @@ case CP_dHL: tByte=readMem(HL); CP(tByte); break;
 case CP_b: tByte=readMem(PC++); CP(tByte); break;
 
 //Jumps
-case JR_b:    PC+=(int8_t)readMem(PC)-1; break;
-case JR_Z_b:  (F&Zflag)?(PC+=(int8_t)readMem(PC)-1):PC++;break;
-case JR_C_b:  (F&Cflag)?(PC+=(int8_t)readMem(PC)-1):PC++;break;
-case JR_NZ_b: (F&Zflag)?PC++:(PC+=(int8_t)readMem(PC)-1);break;
-case JR_NC_b: (F&Cflag)?PC++:(PC+=(int8_t)readMem(PC)-1);break;
+case JR_b:    PC+=(int8_t)readMem(PC)+1; break;
+case JR_Z_b:  (F&Zflag)?(PC+=(int8_t)readMem(PC)+1):PC++;break;
+case JR_C_b:  (F&Cflag)?(PC+=(int8_t)readMem(PC)+1):PC++;break;
+case JR_NZ_b: (F&Zflag)?PC++:(PC+=(int8_t)readMem(PC)+1);break;
+case JR_NC_b: (F&Cflag)?PC++:(PC+=(int8_t)readMem(PC)+1);break;
 
 case JP_w:    PC=readMem(PC)|readMem(PC+1)<<8; break;
 case JP_Z_w:  (F&Zflag)?(PC=readMem(PC)|readMem(PC+1)<<8):(PC+=2); break;

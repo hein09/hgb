@@ -289,7 +289,8 @@ int main(int argc, char *argv[]){
         PC=0x100;
         uint8_t op;
         while(running){
-            printf("PC: %04x\n",PC);
+            printf("\nAF: %04x | BC: %04x | HL: %04x\n",AF,BC,HL);
+            printf("PC: %04x | ",PC);
             printf("Next OP: %s %02x %02x %02x\n",names[rom[PC]],rom[PC],rom[PC+1],rom[PC+2]);
             op=readMem(PC++);
             decode(op);
